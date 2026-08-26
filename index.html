@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sakurartro — backend developer</title>
+<meta name="description" content="sakurartro — backend developer. Go &amp; Python. bots, APIs, and small tools.">
+<meta name="theme-color" content="#100f0d">
+<meta property="og:title" content="sakurartro — backend developer">
+<meta property="og:description" content="Go &amp; Python. bots, APIs, and small tools.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23100f0d'/%3E%3Crect x='9' y='9' width='14' height='14' fill='%23d6ff3f'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #100f0d; --surface: #141310; --surface-2: #161512; --surface-3: #1a1815;
+    --line: #2a2823; --line-soft: #24221d; --line-faint: #1e1c18;
+    --fg: #f5f2ea; --fg-dim: #a8a49a; --fg-mute: #6f6b60; --fg-faint: #7a766a;
+    --accent: #d6ff3f;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  a { color: var(--fg); text-decoration: none; }
+  a:hover { color: var(--accent); }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  .grid-layer, .glow-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .grid-layer {
+    background-image:
+      linear-gradient(to right, rgba(245,242,234,.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245,242,234,.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .glow-layer { background: radial-gradient(110% 80% at 50% 0%, rgba(214,255,63,.045), transparent 60%); }
+
+  header {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px clamp(16px, 4vw, 48px);
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(16,15,13,.86); backdrop-filter: blur(10px);
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
+  }
+  header.hidden { transform: translateY(-64px); opacity: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .dot { width: 7px; height: 7px; border-radius: 1px; background: var(--accent); }
+  .sep, .section-label { color: var(--fg-mute); }
+  #handle { cursor: default; }
+  nav { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 26px); font-size: 12px; }
+  nav a { color: var(--fg-dim); }
+  .progress-track { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--line-faint); }
+  .progress-bar { height: 2px; width: 0; background: var(--accent); transition: width .12s linear; }
+
+  main {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; gap: clamp(72px, 11vh, 132px);
+    width: 100%; max-width: 920px; margin: 0 auto;
+    padding: clamp(40px, 8vh, 88px) clamp(16px, 4vw, 48px) 0;
+  }
+  section { display: flex; flex-direction: column; gap: 22px; }
+  .rule { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: .2em; color: var(--fg-mute); }
+  .rule .line { flex: 1; height: 1px; background: var(--line-soft); }
+  .rule .scr { cursor: default; }
+
+  .terminal { border: 1px solid var(--line); border-radius: 5px; background: var(--surface); box-shadow: 0 30px 70px -40px rgba(0,0,0,.9); }
+  .chrome { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); background: #181713; border-radius: 4px 4px 0 0; }
+  .chrome i { width: 9px; height: 9px; border-radius: 2px; background: #3a3832; display: block; }
+  .chrome i.live { background: var(--accent); }
+  .chrome .path { margin-left: 10px; font-size: 12px; color: var(--fg-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chrome .meta { margin-left: auto; font-size: 11px; color: var(--fg-faint); white-space: nowrap; }
+  .term-body { padding: clamp(18px,3vw,30px) clamp(16px,3vw,28px) clamp(26px,4vw,38px); font-size: clamp(13px,1.6vw,15px); line-height: 2.05; min-height: clamp(300px,52vh,460px); }
+  .row { display: flex; gap: 10px; align-items: baseline; }
+  .row .prompt { color: var(--accent); flex: none; }
+  .row .out { text-wrap: pretty; }
+  .caret { display: inline-block; width: 9px; height: 1.05em; margin-left: 3px; background: var(--accent); vertical-align: -3px; animation: caret 1.05s step-end infinite; }
+  @keyframes caret { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+  .card {
+    display: flex; flex-direction: column; gap: 16px; padding: 18px; min-height: 116px;
+    border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2);
+    transition: background .14s steps(2), border-color .14s steps(2);
+  }
+  .card:hover { border-color: var(--accent); background: #1c1a16; animation: glitchx .6s steps(1) infinite; }
+  .card .top { display: flex; align-items: center; justify-content: space-between; }
+  .card .token { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #35332c; border-radius: 3px; font-size: 12px; color: var(--accent); }
+  .card .arrow { font-size: 13px; color: var(--fg-faint); }
+  .card .name { font-size: 14px; color: var(--fg); }
+  .card .sub { font-size: 11px; color: var(--fg-mute); }
+  .card .body { display: flex; flex-direction: column; gap: 5px; }
+  @keyframes glitchx {
+    0%,88%,100% { transform: translate(0) }
+    90% { transform: translate(-1.5px, 1px) }
+    93% { transform: translate(1.5px, -1px) }
+    96% { transform: translate(-.5px, 0) }
+  }
+
+  .stack { display: flex; flex-direction: column; gap: 22px; }
+  .group { display: grid; gap: 12px; }
+  .group h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 11px; font-weight: 400; color: var(--fg-mute); }
+  .group h2 span { color: var(--accent); }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 9px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-2); font-size: 13px; color: var(--fg-dim); transition: all .14s steps(2); }
+  .badge b { width: 6px; height: 6px; border-radius: 1px; background: var(--fg-mute); }
+  .badge:hover { border-color: var(--accent); color: var(--fg); }
+  .badge.lang { border-color: #35332c; background: var(--surface-3); color: var(--fg); }
+  .badge.lang b { background: var(--accent); }
+  .badge.lang:hover { color: var(--accent); }
+  .divider { height: 1px; background: var(--line-faint); }
+
+  footer { display: flex; align-items: center; gap: 8px; padding: 26px 0 40px; border-top: 1px solid var(--line-faint); font-size: 11px; color: var(--fg-faint); }
+  footer .prompt { color: var(--accent); }
+  footer .blk { display: inline-block; width: 8px; height: 12px; background: var(--fg-faint); animation: caret 1.05s step-end infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .caret, footer .blk { animation: none; }
+    .card:hover { animation: none; }
+    header { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="grid-layer"></div>
+  <div class="glow-layer"></div>
+
+  <header id="site-header">
+    <div class="brand">
+      <span class="dot"></span>
+      <span id="handle" data-scramble="~/sakurartro">~/sakurartro</span>
+      <span class="sep">·</span>
+      <span class="section-label" id="section-label">01 SESSION</span>
+    </div>
+    <nav>
+      <a href="#about">about</a>
+      <a href="#links">links</a>
+      <a href="#stack">stack</a>
+    </nav>
+    <div class="progress-track"><div class="progress-bar" id="progress"></div></div>
+  </header>
+
+  <main>
+    <section id="about">
+      <div class="rule"><span>01</span><span class="line"></span><span class="scr" data-scramble="SESSION">SESSION</span></div>
+      <div class="terminal">
+        <div class="chrome">
+          <i></i><i></i><i class="live"></i>
+          <span class="path">sakurartro@localhost:~$</span>
+          <span class="meta">zsh · 80×24</span>
+        </div>
+        <div class="term-body" id="term">
+          <div class="row"><span class="prompt">$</span><span class="out" id="active"><span class="caret"></span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="links">
+      <div class="rule"><span>02</span><span class="line"></span><span class="scr" data-scramble="ELSEWHERE">ELSEWHERE</span></div>
+      <div class="cards">
+        <a class="card" href="https://github.com/sakurartro">
+          <div class="top"><span class="token">gh</span><span class="arrow">↗</span></div>
+          <div class="body"><span class="name">GitHub</span><span class="sub">/sakurartro — repos &amp; commits</span></div>
+        </a>
+        <a class="card" href="https://t.me/sakurartro">
+          <div class="top"><span class="token">tg</span><span class="arrow">↗</span></div>
+          <div class="body"><span class="name">Telegram</span><span class="sub">@sakurartro — fastest reply</span></div>
+        </a>
+        <a class="card" href="mailto:imsusimgg@gmail.com">
+          <div class="top"><span class="token">@</span><span class="arrow">↗</span></div>
+          <div class="body"><span class="name">Email</span><span class="sub">imsusimgg@gmail.com</span></div>
+        </a>
+        <a class="card" href="https://open.spotify.com/user/31dboxh7dcf5qdkn4xk5uted7w4q">
+          <div class="top"><span class="token">♪</span><span class="arrow">↗</span></div>
+          <div class="body"><span class="name">Spotify</span></div>
+        </a>
+        <a class="card" href="#">
+          <div class="top"><span class="token">dc</span><span class="arrow">↗</span></div>
+          <div class="body"><span class="name">Discord</span><span class="sub">@sakurartro</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="rule"><span>03</span><span class="line"></span><span class="scr" data-scramble="STACK">STACK</span></div>
+      <div class="stack">
+        <div class="group">
+          <h2><span>›</span> languages</h2>
+          <div class="badges">
+            <span class="badge lang"><b></b>Go</span>
+            <span class="badge lang"><b></b>Python</span>
+            <span class="badge lang"><b></b>SQL</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="group">
+          <h2><span>›</span> libraries</h2>
+          <div class="badges">
+            <span class="badge"><b></b>aiogram</span>
+            <span class="badge"><b></b>Rich</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="group">
+          <h2><span>›</span> infra &amp; tools</h2>
+          <div class="badges">
+            <span class="badge"><b></b>Linux</span>
+            <span class="badge"><b></b>Docker</span>
+            <span class="badge"><b></b>PostgreSQL</span>
+            <span class="badge"><b></b>Git</span>
+            <span class="badge"><b></b>AI tooling</span>
+            <span class="badge"><b></b>IoT</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer><span class="prompt">$</span><span>exit</span><span class="blk"></span></footer>
+  </main>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var POOL = '!<>-_\\/[]{}=+*^?#01xf';
+  var SPEED = 52;
+
+  /* ---- terminal type-on ---- */
+  var term = document.getElementById('term');
+  var active = document.getElementById('active');
+  var script = [
+    { cmd: 'whoami', out: [{ text: 'sakurartro', color: 'var(--fg)', scramble: true }] },
+    { cmd: 'cat about.txt', out: [
+      { text: 'backend developer. Go & Python.', color: 'var(--fg-dim)' },
+      { text: 'bots, APIs, and small tools.', color: 'var(--fg-dim)' }
+    ] },
+    { cmd: 'uptime', out: [{ text: 'online · replies in Telegram · timezone: UTC+7', color: 'var(--fg-mute)' }] }
+  ];
+
+  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function addRow(prefix, text, color) {
+    var row = document.createElement('div');
+    row.className = 'row';
+    var p = document.createElement('span');
+    p.className = 'prompt';
+    p.textContent = prefix;
+    var o = document.createElement('span');
+    o.className = 'out';
+    o.textContent = text;
+    if (color) o.style.color = color;
+    row.appendChild(p);
+    row.appendChild(o);
+    term.insertBefore(row, active.parentNode);
+    return o;
+  }
+
+  async function scrambleInto(node, target) {
+    for (var tick = 0; ; tick++) {
+      var revealed = Math.floor(tick / 2.2);
+      var out = '';
+      for (var i = 0; i < target.length; i++) {
+        out += i < revealed ? target[i] : POOL[Math.floor(Math.random() * POOL.length)];
+      }
+      node.textContent = out;
+      if (revealed >= target.length) { node.textContent = target; return; }
+      await wait(42);
+    }
+  }
+
+  async function run() {
+    if (reduce) {
+      script.forEach(function (step) {
+        addRow('$', step.cmd, 'var(--fg)');
+        step.out.forEach(function (l) { addRow('', l.text, l.color); });
+      });
+      active.parentNode.style.display = 'none';
+      return;
+    }
+    await wait(500);
+    for (var s = 0; s < script.length; s++) {
+      var step = script[s];
+      for (var i = 1; i <= step.cmd.length; i++) {
+        active.textContent = step.cmd.slice(0, i);
+        active.appendChild(Object.assign(document.createElement('span'), { className: 'caret' }));
+        await wait(SPEED + Math.random() * SPEED * 0.7);
+      }
+      await wait(320);
+      addRow('$', step.cmd, 'var(--fg)');
+      active.textContent = '';
+      active.appendChild(Object.assign(document.createElement('span'), { className: 'caret' }));
+      await wait(180);
+      for (var j = 0; j < step.out.length; j++) {
+        var line = step.out[j];
+        var node = addRow('', line.scramble ? '' : line.text, line.color);
+        if (line.scramble) await scrambleInto(node, line.text);
+        await wait(150);
+      }
+      await wait(520);
+    }
+  }
+  run();
+
+  /* ---- scramble on hover ---- */
+  if (!reduce) {
+    document.querySelectorAll('[data-scramble]').forEach(function (el) {
+      var target = el.dataset.scramble;
+      var iv;
+      el.addEventListener('mouseenter', function () {
+        clearInterval(iv);
+        var tick = 0;
+        iv = setInterval(function () {
+          tick++;
+          var revealed = Math.floor(tick / 2.2);
+          var out = '';
+          for (var i = 0; i < target.length; i++) {
+            var c = target[i];
+            out += (i < revealed || c === '/' || c === '~') ? c : POOL[Math.floor(Math.random() * POOL.length)];
+          }
+          el.textContent = out;
+          if (revealed >= target.length) { clearInterval(iv); el.textContent = target; }
+        }, 42);
+      });
+      el.addEventListener('mouseleave', function () { clearInterval(iv); el.textContent = target; });
+    });
+  }
+
+  /* ---- auto-hide header + progress + section label ---- */
+  var header = document.getElementById('site-header');
+  var bar = document.getElementById('progress');
+  var label = document.getElementById('section-label');
+  var marks = [['01 SESSION', 'about'], ['02 ELSEWHERE', 'links'], ['03 STACK', 'stack']];
+  var lastY = window.scrollY;
+  var queued = false;
+
+  function onScroll() {
+    var y = window.scrollY;
+    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    var delta = y - lastY;
+    if (delta > 2 && y > 80) header.classList.add('hidden');
+    else if (delta < -2 || y <= 80) header.classList.remove('hidden');
+    lastY = y;
+    bar.style.width = Math.round((y / max) * 100) + '%';
+    var sec = marks[0][0];
+    marks.forEach(function (m) {
+      var el = document.getElementById(m[1]);
+      if (el && el.getBoundingClientRect().top <= 140) sec = m[0];
+    });
+    if (label.textContent !== sec) label.textContent = sec;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; onScroll(); });
+  }, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>
