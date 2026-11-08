@@ -2,364 +2,372 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>sakurartro — dev</title>
 <meta name="description" content="sakurartro — dev. Go &amp; Python. bots, APIs, and small tools.">
-<meta name="theme-color" content="#100f0d">
+<meta name="theme-color" content="#E8EBEE">
 <meta property="og:title" content="sakurartro — dev">
 <meta property="og:description" content="Go &amp; Python. bots, APIs, and small tools.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23100f0d'/%3E%3Crect x='9' y='9' width='14' height='14' fill='%23d6ff3f'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23E8EBEE'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23D9668A'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
   :root {
-    --bg: #100f0d; --surface: #141310; --surface-2: #161512; --surface-3: #1a1815;
-    --line: #2a2823; --line-soft: #24221d; --line-faint: #1e1c18;
-    --fg: #f5f2ea; --fg-dim: #a8a49a; --fg-mute: #6f6b60; --fg-faint: #7a766a;
-    --accent: #d6ff3f;
+    color-scheme: light;
+    --paper: #E8EBEE;
+    --paper-2: #DDE2E7;
+    --ink: #1A1B20;
+    --ink-soft: #4B4F59;
+    --petal: #EC9FB5;
+    --petal-deep: #D9668A;
+    --display: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+    --body: 'Zen Kaku Gothic New', 'Hiragino Sans', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
   }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
   html { scroll-behavior: smooth; }
   body {
-    margin: 0; background: var(--bg); color: var(--fg);
-    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-    -webkit-font-smoothing: antialiased; overflow-x: hidden;
-  }
-  a { color: var(--fg); text-decoration: none; }
-  a:hover { color: var(--accent); }
-  ::selection { background: var(--accent); color: var(--bg); }
-
-  .grid-layer, .glow-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-  .grid-layer {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--body); font-size: 16px; line-height: 1.6;
     background-image:
-      linear-gradient(to right, rgba(245,242,234,.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(245,242,234,.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+      radial-gradient(ellipse at 20% 0%, #F3F5F7 0, transparent 55%),
+      radial-gradient(ellipse at 100% 100%, var(--paper-2) 0, transparent 50%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
   }
-  .glow-layer { background: radial-gradient(110% 80% at 50% 0%, rgba(214,255,63,.045), transparent 60%); }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--petal-deep); outline-offset: 3px; border-radius: 4px; }
+  ::selection { background: var(--petal); color: var(--ink); }
 
-  header {
-    position: sticky; top: 0; z-index: 20;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 14px clamp(16px, 4vw, 48px);
-    border-bottom: 1px solid var(--line-soft);
-    background: rgba(16,15,13,.86); backdrop-filter: blur(10px);
-    transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .22s ease;
-  }
-  header.hidden { transform: translateY(-64px); opacity: 0; }
-  .brand { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .dot { width: 7px; height: 7px; border-radius: 1px; background: var(--accent); }
-  .sep, .section-label { color: var(--fg-mute); }
-  #handle { cursor: default; }
-  nav { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 26px); font-size: 12px; }
-  nav a { color: var(--fg-dim); }
-  .progress-track { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--line-faint); }
-  .progress-bar { height: 2px; width: 0; background: var(--accent); transition: width .12s linear; }
-
-  main {
-    position: relative; z-index: 1;
-    display: flex; flex-direction: column; gap: clamp(72px, 11vh, 132px);
-    width: 100%; max-width: 920px; margin: 0 auto;
-    padding: clamp(40px, 8vh, 88px) clamp(16px, 4vw, 48px) 0;
-  }
-  section { display: flex; flex-direction: column; gap: 22px; }
-  .rule { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: .2em; color: var(--fg-mute); }
-  .rule .line { flex: 1; height: 1px; background: var(--line-soft); }
-  .rule .scr { cursor: default; }
-
-  .terminal { border: 1px solid var(--line); border-radius: 5px; background: var(--surface); box-shadow: 0 30px 70px -40px rgba(0,0,0,.9); }
-  .chrome { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); background: #181713; border-radius: 4px 4px 0 0; }
-  .chrome i { width: 9px; height: 9px; border-radius: 2px; background: #3a3832; display: block; }
-  .chrome i.live { background: var(--accent); }
-  .chrome .path { margin-left: 10px; font-size: 12px; color: var(--fg-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chrome .meta { margin-left: auto; font-size: 11px; color: var(--fg-faint); white-space: nowrap; }
-  .term-body { padding: clamp(18px,3vw,30px) clamp(16px,3vw,28px) clamp(26px,4vw,38px); font-size: clamp(13px,1.6vw,15px); line-height: 2.05; min-height: clamp(300px,52vh,460px); }
-  .row { display: flex; gap: 10px; align-items: baseline; }
-  .row .prompt { color: var(--accent); flex: none; }
-  .row .out { text-wrap: pretty; }
-  .caret { display: inline-block; width: 9px; height: 1.05em; margin-left: 3px; background: var(--accent); vertical-align: -3px; animation: caret 1.05s step-end infinite; }
-  @keyframes caret { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
-
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
-  .card {
-    display: flex; flex-direction: column; gap: 16px; padding: 18px; min-height: 116px;
-    border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2);
-    transition: background .14s steps(2), border-color .14s steps(2);
-  }
-  .card:hover { border-color: var(--accent); background: #1c1a16; animation: glitchx .6s steps(1) infinite; }
-  .card .top { display: flex; align-items: center; justify-content: space-between; }
-  .card .token { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #35332c; border-radius: 3px; font-size: 12px; color: var(--accent); }
-  .card .arrow { font-size: 13px; color: var(--fg-faint); }
-  .card .name { font-size: 14px; color: var(--fg); }
-  .card .sub { font-size: 11px; color: var(--fg-mute); }
-  .card .body { display: flex; flex-direction: column; gap: 5px; }
-  @keyframes glitchx {
-    0%,88%,100% { transform: translate(0) }
-    90% { transform: translate(-1.5px, 1px) }
-    93% { transform: translate(1.5px, -1px) }
-    96% { transform: translate(-.5px, 0) }
+  .wrap {
+    max-width: 1200px; margin: 0 auto;
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 56px 40px;
   }
 
-  .stack { display: flex; flex-direction: column; gap: 22px; }
-  .group { display: grid; gap: 12px; }
-  .group h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 11px; font-weight: 400; color: var(--fg-mute); }
-  .group h2 span { color: var(--accent); }
-  .badges { display: flex; flex-wrap: wrap; gap: 10px; }
-  .badge { display: inline-flex; align-items: center; gap: 9px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-2); font-size: 13px; color: var(--fg-dim); transition: all .14s steps(2); }
-  .badge b { width: 6px; height: 6px; border-radius: 1px; background: var(--fg-mute); }
-  .badge:hover { border-color: var(--accent); color: var(--fg); }
-  .badge.lang { border-color: #35332c; background: var(--surface-3); color: var(--fg); }
-  .badge.lang b { background: var(--accent); }
-  .badge.lang:hover { color: var(--accent); }
-  .divider { height: 1px; background: var(--line-faint); }
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+  .treebox { position: relative; aspect-ratio: 4 / 5; max-height: 80vh; width: 100%; }
+  .treebox canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .moon { position: absolute; top: 4%; right: 8%; width: 16%; aspect-ratio: 1; border-radius: 50%; background: #F7F8FA; box-shadow: 0 0 0 1px #00000010, 0 0 60px 10px #fff8; }
+  .caption { position: absolute; left: 0; bottom: 0; font: 12px/1.5 var(--mono); color: var(--ink-soft); }
+  .caption b { color: var(--ink); font-weight: 500; }
 
-  footer { display: flex; align-items: center; gap: 8px; padding: 26px 0 40px; border-top: 1px solid var(--line-faint); font-size: 11px; color: var(--fg-faint); }
-  footer .prompt { color: var(--accent); }
-  footer .blk { display: inline-block; width: 8px; height: 12px; background: var(--fg-faint); animation: caret 1.05s step-end infinite; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 7vw, 92px); line-height: 1; letter-spacing: -.02em; margin: 0 0 16px; text-wrap: balance; }
+  h1 span { color: var(--petal-deep); }
+  .bio { max-width: 44ch; color: var(--ink-soft); margin: 0 0 8px; }
 
+  h2 {
+    font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--ink-soft);
+    margin: 32px 0 12px; display: flex; align-items: center; gap: 10px;
+  }
+  h2::after { content: ""; height: 1px; background: var(--ink); opacity: .2; flex: 1; }
+  .live { display: inline-flex; align-items: center; gap: 6px; color: var(--petal-deep); }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+
+  .socials { display: flex; flex-wrap: wrap; gap: 10px; }
+  .socials a { font: 14px var(--mono); text-decoration: none; border: 1px solid var(--ink); padding: 8px 16px; border-radius: 99px; transition: background .2s, color .2s; }
+  .socials a:hover { background: var(--ink); color: var(--paper); }
+
+  /* ---------- trio ---------- */
+  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 64px; }
+  .trio h2 { margin-top: 0; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid #1A1B2018; }
+  .list li.friend { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .list b { display: block; font-family: var(--display); font-weight: 600; font-size: 19px; line-height: 1.2; }
+  .list small { color: var(--ink-soft); font-size: 13px; }
+  .list em { font: normal 12px var(--mono); color: var(--ink-soft); }
+  .ava { width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-family: var(--display); font-weight: 600; font-size: 18px; }
+  .list li:nth-child(2n) .ava { background: var(--petal-deep); }
+  img.ava { object-fit: cover; background: var(--paper-2); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px #1A1B2022; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .chips span { font: 12px var(--mono); border: 1px solid #1A1B2040; border-radius: 99px; padding: 2px 11px; color: var(--ink-soft); }
+
+  .repos { list-style: none; margin: 0; padding: 0; display: grid; }
+  .repos a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 10px 0; border-bottom: 1px solid #1A1B2018; text-decoration: none; transition: padding .2s; }
+  .repos a:hover { padding-left: 10px; }
+  .repos strong { font-family: var(--display); font-weight: 600; font-size: 20px; overflow-wrap: anywhere; }
+  .repos small { grid-column: 1; color: var(--ink-soft); font-size: 13px; }
+  .stars { grid-row: 1 / 3; grid-column: 2; align-self: center; font: 500 15px var(--mono); font-variant-numeric: tabular-nums; }
+  .stars em { font-style: normal; color: var(--petal-deep); }
+  .empty { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+  /* ---------- stack ---------- */
+  .stack { margin-top: 56px; }
+  .stack h2 { margin-top: 0; }
+  .stack-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack-row span { font: 13px var(--mono); border: 1px solid #1A1B2040; border-radius: 6px; padding: 4px 12px; color: var(--ink-soft); }
+  .stack-row span.lang { border-color: var(--ink); color: var(--ink); }
+
+  /* ---------- commit petals ---------- */
+  .log { margin-top: 56px; }
+  .log h2 { margin-top: 0; }
+  .petals { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 4px; overflow-x: auto; padding-bottom: 8px; }
+  .petals i { width: 14px; height: 14px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #1A1B2012; }
+  .petals i[data-l="0"] { background: #1A1B2012; }
+  .petals i[data-l="1"] { background: #EC9FB580; }
+  .petals i[data-l="2"] { background: #EC9FB5; }
+  .petals i[data-l="3"] { background: #D9668A; }
+  .petals i[data-l="4"] { background: #B73C66; }
+  .petals i.pad { visibility: hidden; }
+  .legend { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--ink-soft); margin-top: 6px; gap: 12px; flex-wrap: wrap; }
+
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #1A1B2022; font: 12px var(--mono); color: var(--ink-soft); }
+
+  @media (max-width: 900px) {
+    .trio { grid-template-columns: 1fr; gap: 40px; }
+  }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; gap: 28px; }
+    .treebox { aspect-ratio: 1 / 1; }
+    .petals i { width: 12px; height: 12px; }
+  }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .caret, footer .blk { animation: none; }
-    .card:hover { animation: none; }
-    header { transition: none; }
+    .live i { animation: none; }
   }
 </style>
 </head>
 <body>
-  <div class="grid-layer"></div>
-  <div class="glow-layer"></div>
-
-  <header id="site-header">
-    <div class="brand">
-      <span class="dot"></span>
-      <span id="handle" data-scramble="~/sakurartro">~/sakurartro</span>
-      <span class="sep">·</span>
-      <span class="section-label" id="section-label">01 SESSION</span>
+<div class="wrap">
+  <section class="hero">
+    <div class="treebox" role="img" aria-label="A cherry tree. Each blossom stands for a few of my GitHub commits from the last year.">
+      <div class="moon"></div>
+      <canvas id="tree"></canvas>
+      <canvas id="fall"></canvas>
+      <div class="caption" id="caption" hidden><b id="tot">0</b> commits · last 365 days<br>1 blossom ≈ <span id="per">0</span> commits</div>
     </div>
-    <nav>
-      <a href="#about">about</a>
-      <a href="#links">links</a>
-      <a href="#stack">stack</a>
-    </nav>
-    <div class="progress-track"><div class="progress-bar" id="progress"></div></div>
-  </header>
 
-  <main>
-    <section id="about">
-      <div class="rule"><span>01</span><span class="line"></span><span class="scr" data-scramble="SESSION">SESSION</span></div>
-      <div class="terminal">
-        <div class="chrome">
-          <i></i><i></i><i class="live"></i>
-          <span class="path">sakurartro@localhost:~$</span>
-          <span class="meta">zsh · 80×24</span>
-        </div>
-        <div class="term-body" id="term">
-          <div class="row"><span class="prompt">$</span><span class="out" id="active"><span class="caret"></span></span></div>
-        </div>
+    <div>
+      <h1>sakura<span>rtro</span></h1>
+      <p class="bio">Backend developer. Go &amp; Python. Bots, APIs and small tools. Below are the places I live online, the people I keep close, and what I listen to.</p>
+
+      <h2>Find me</h2>
+      <div class="socials">
+        <a href="https://github.com/sakurartro">GitHub</a>
+        <a href="https://t.me/sakurartro">Telegram</a>
+        <a href="mailto:imsusimgg@gmail.com">Email</a>
+        <a href="https://open.spotify.com/user/31dboxh7dcf5qdkn4xk5uted7w4q">Spotify</a>
+        <a href="https://discord.gg/a6rkUHjV">Discord</a>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="links">
-      <div class="rule"><span>02</span><span class="line"></span><span class="scr" data-scramble="ELSEWHERE">ELSEWHERE</span></div>
-      <div class="cards">
-        <a class="card" href="https://github.com/sakurartro">
-          <div class="top"><span class="token">gh</span><span class="arrow">↗</span></div>
-          <div class="body"><span class="name">GitHub</span><span class="sub">/sakurartro — repos &amp; commits</span></div>
-        </a>
-        <a class="card" href="https://t.me/sakurartro">
-          <div class="top"><span class="token">tg</span><span class="arrow">↗</span></div>
-          <div class="body"><span class="name">Telegram</span><span class="sub">@sakurartro — fastest reply</span></div>
-        </a>
-        <a class="card" href="mailto:imsusimgg@gmail.com">
-          <div class="top"><span class="token">@</span><span class="arrow">↗</span></div>
-          <div class="body"><span class="name">Email</span><span class="sub">imsusimgg@gmail.com</span></div>
-        </a>
-        <a class="card" href="https://open.spotify.com/user/31dboxh7dcf5qdkn4xk5uted7w4q">
-          <div class="top"><span class="token">♪</span><span class="arrow">↗</span></div>
-          <div class="body"><span class="name">Spotify</span></div>
-        </a>
-        <a class="card" href="https://discord.gg/a6rkUHjV">
-          <div class="top"><span class="token">dc</span><span class="arrow">↗</span></div>
-          <div class="body"><span class="name">Discord</span><span class="sub">@sakurartro</span></div>
-        </a>
-      </div>
-    </section>
+  <section class="trio">
+    <div>
+      <h2>Best friends</h2>
+      <ul class="list" id="friends"></ul>
+    </div>
+    <div>
+      <h2>Music taste</h2>
+      <ul class="list" id="artists"></ul>
+    </div>
+    <div>
+      <h2>Projects <span class="live"><i></i>stars, live</span></h2>
+      <ul class="repos" id="repos"><li><p class="empty">Loading from GitHub…</p></li></ul>
+    </div>
+  </section>
 
-    <section id="stack">
-      <div class="rule"><span>03</span><span class="line"></span><span class="scr" data-scramble="STACK">STACK</span></div>
-      <div class="stack">
-        <div class="group">
-          <h2><span>›</span> languages</h2>
-          <div class="badges">
-            <span class="badge lang"><b></b>Go</span>
-            <span class="badge lang"><b></b>Python</span>
-            <span class="badge lang"><b></b>SQL</span>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="group">
-          <h2><span>›</span> libraries</h2>
-          <div class="badges">
-            <span class="badge"><b></b>aiogram</span>
-            <span class="badge"><b></b>Rich</span>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="group">
-          <h2><span>›</span> infra &amp; tools</h2>
-          <div class="badges">
-            <span class="badge"><b></b>Linux</span>
-            <span class="badge"><b></b>Docker</span>
-            <span class="badge"><b></b>PostgreSQL</span>
-            <span class="badge"><b></b>Git</span>
-            <span class="badge"><b></b>AI tooling</span>
-            <span class="badge"><b></b>IoT</span>
-          </div>
-        </div>
-      </div>
-    </section>
+  <section class="stack">
+    <h2>Stack</h2>
+    <div class="stack-row">
+      <span class="lang">Go</span><span class="lang">Python</span><span class="lang">SQL</span>
+      <span>aiogram</span><span>Rich</span><span>Linux</span><span>Docker</span><span>PostgreSQL</span><span>Git</span><span>AI tooling</span><span>IoT</span>
+    </div>
+  </section>
 
-    <footer><span class="prompt">$</span><span>exit</span><span class="blk"></span></footer>
-  </main>
+  <section class="log" id="log" hidden>
+    <h2>Commit petals · <span id="tot2"></span></h2>
+    <div class="petals" id="petals" role="img" aria-label="GitHub contribution calendar for the last year"></div>
+    <div class="legend"><span id="from"></span><span>fewer <b style="color:#EC9FB5">●</b> <b style="color:#D9668A">●</b> <b style="color:#B73C66">●</b> more</span><span id="to"></span></div>
+  </section>
+
+  <footer>Commits and stars are read live from GitHub. Artist photos via Deezer.</footer>
+</div>
 
 <script>
 (function () {
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var POOL = '!<>-_\\/[]{}=+*^?#01xf';
-  var SPEED = 52;
+  'use strict';
 
-  /* ---- terminal type-on ---- */
-  var term = document.getElementById('term');
-  var active = document.getElementById('active');
-  var script = [
-    { cmd: 'whoami', out: [{ text: 'sakurartro', color: 'var(--fg)', scramble: true }] },
-    { cmd: 'cat about.txt', out: [
-      { text: 'backend developer. Go & Python.', color: 'var(--fg-dim)' },
-      { text: 'bots, APIs, and small tools.', color: 'var(--fg-dim)' }
-    ] },
-    { cmd: 'uptime', out: [{ text: 'online · replies in Telegram · timezone: UTC+7', color: 'var(--fg-mute)' }] }
+  /* ================= edit your content here ================= */
+  var GITHUB_USER = 'sakurartro';
+
+  // TODO: placeholder friends. Replace the names, handles and notes with real ones.
+  var FRIENDS = [
+    { name: 'Mika',  note: 'since 2016 · co-op partner', handle: '@mika.k' },
+    { name: 'Dani',  note: 'reviews my code at 3am',     handle: '@danidoes' },
+    { name: 'Yuki',  note: 'makes the beats I sample',   handle: '@yukibeats' },
+    { name: 'Tomás', note: 'draws all my covers',        handle: '@tomasdraws' },
+    { name: 'Aya',   note: 'my concert plus-one',        handle: '@aya.png' }
   ];
 
-  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  // Photos live in assets/artists/. Replace a file to change a picture.
+  var ARTISTS = [
+    { name: 'Charli XCX',        img: 'assets/artists/charli-xcx.jpg' },
+    { name: 'Kim Petras',        img: 'assets/artists/kim-petras.jpg' },
+    { name: 'Ayesha Erotica',    img: 'assets/artists/ayesha-erotica.jpg' },
+    { name: 'Sabrina Carpenter', img: 'assets/artists/sabrina-carpenter.jpg' },
+    { name: 'Slayyyter',         img: 'assets/artists/slayyyter.jpg' }
+  ];
+  var GENRES = ['hyperpop', 'dance-pop', 'electropop', 'synth-pop'];
+  /* ========================================================== */
 
-  function addRow(prefix, text, color) {
-    var row = document.createElement('div');
-    row.className = 'row';
-    var p = document.createElement('span');
-    p.className = 'prompt';
-    p.textContent = prefix;
-    var o = document.createElement('span');
-    o.className = 'out';
-    o.textContent = text;
-    if (color) o.style.color = color;
-    row.appendChild(p);
-    row.appendChild(o);
-    term.insertBefore(row, active.parentNode);
-    return o;
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
   }
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  async function scrambleInto(node, target) {
-    for (var tick = 0; ; tick++) {
-      var revealed = Math.floor(tick / 2.2);
-      var out = '';
-      for (var i = 0; i < target.length; i++) {
-        out += i < revealed ? target[i] : POOL[Math.floor(Math.random() * POOL.length)];
-      }
-      node.textContent = out;
-      if (revealed >= target.length) { node.textContent = target; return; }
-      await wait(42);
-    }
-  }
+  /* ---------- friends ---------- */
+  FRIENDS.forEach(function (f) {
+    var li = el('li', 'friend');
+    li.appendChild(el('span', 'ava', f.name.charAt(0)));
+    var mid = el('span');
+    mid.appendChild(el('b', null, f.name));
+    mid.appendChild(el('small', null, f.note));
+    li.appendChild(mid);
+    li.appendChild(el('em', null, f.handle));
+    $('friends').appendChild(li);
+  });
 
-  async function run() {
-    if (reduce) {
-      script.forEach(function (step) {
-        addRow('$', step.cmd, 'var(--fg)');
-        step.out.forEach(function (l) { addRow('', l.text, l.color); });
+  /* ---------- artists ---------- */
+  ARTISTS.forEach(function (a) {
+    var li = el('li');
+    var img = el('img', 'ava');
+    img.src = a.img; img.alt = ''; img.width = 44; img.height = 44; img.loading = 'lazy'; img.decoding = 'async';
+    li.appendChild(img);
+    li.appendChild(el('b', null, a.name));
+    $('artists').appendChild(li);
+  });
+  var chips = el('div', 'chips');
+  GENRES.forEach(function (g) { chips.appendChild(el('span', null, g)); });
+  $('artists').parentNode.appendChild(chips);
+
+  /* ---------- GitHub: repos with live stars ---------- */
+  function loadRepos() {
+    fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&type=owner')
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (list) {
+        var top = list.filter(function (r) { return !r.fork && !r.archived && r.name.toLowerCase() !== GITHUB_USER; })
+          .sort(function (a, b) { return b.stargazers_count - a.stargazers_count || new Date(b.pushed_at) - new Date(a.pushed_at); })
+          .slice(0, 3);
+        var ul = $('repos');
+        ul.textContent = '';
+        if (!top.length) { var li0 = el('li'); li0.appendChild(el('p', 'empty', 'Nothing public yet.')); ul.appendChild(li0); return; }
+        top.forEach(function (r) {
+          var li = el('li');
+          var a = el('a'); a.href = r.html_url;
+          a.appendChild(el('strong', null, r.name));
+          var st = el('span', 'stars'); st.appendChild(el('em', null, '★')); st.appendChild(document.createTextNode(' ' + r.stargazers_count.toLocaleString('en')));
+          a.appendChild(st);
+          a.appendChild(el('small', null, [r.description, r.language].filter(Boolean).join(' · ') || 'GitHub repository'));
+          li.appendChild(a); ul.appendChild(li);
+        });
+      })
+      .catch(function () {
+        if ($('repos').querySelector('a')) return; // keep the last good list
+        $('repos').textContent = '';
+        var li = el('li'); var p = el('p', 'empty'); p.appendChild(document.createTextNode('Could not reach GitHub. '));
+        var a = el('a', null, 'Open my profile'); a.href = 'https://github.com/' + GITHUB_USER; p.appendChild(a);
+        li.appendChild(p); $('repos').appendChild(li);
       });
-      active.parentNode.style.display = 'none';
-      return;
-    }
-    await wait(500);
-    for (var s = 0; s < script.length; s++) {
-      var step = script[s];
-      for (var i = 1; i <= step.cmd.length; i++) {
-        active.textContent = step.cmd.slice(0, i);
-        active.appendChild(Object.assign(document.createElement('span'), { className: 'caret' }));
-        await wait(SPEED + Math.random() * SPEED * 0.7);
-      }
-      await wait(320);
-      addRow('$', step.cmd, 'var(--fg)');
-      active.textContent = '';
-      active.appendChild(Object.assign(document.createElement('span'), { className: 'caret' }));
-      await wait(180);
-      for (var j = 0; j < step.out.length; j++) {
-        var line = step.out[j];
-        var node = addRow('', line.scramble ? '' : line.text, line.color);
-        if (line.scramble) await scrambleInto(node, line.text);
-        await wait(150);
-      }
-      await wait(520);
-    }
   }
-  run();
+  loadRepos();
+  setInterval(loadRepos, 120000);
 
-  /* ---- scramble on hover ---- */
-  if (!reduce) {
-    document.querySelectorAll('[data-scramble]').forEach(function (el) {
-      var target = el.dataset.scramble;
-      var iv;
-      el.addEventListener('mouseenter', function () {
-        clearInterval(iv);
-        var tick = 0;
-        iv = setInterval(function () {
-          tick++;
-          var revealed = Math.floor(tick / 2.2);
-          var out = '';
-          for (var i = 0; i < target.length; i++) {
-            var c = target[i];
-            out += (i < revealed || c === '/' || c === '~') ? c : POOL[Math.floor(Math.random() * POOL.length)];
-          }
-          el.textContent = out;
-          if (revealed >= target.length) { clearInterval(iv); el.textContent = target; }
-        }, 42);
-      });
-      el.addEventListener('mouseleave', function () { clearInterval(iv); el.textContent = target; });
+  /* ---------- GitHub: contributions ---------- */
+  var total = 0;
+  var fmtMonth = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' });
+  fetch('https://github-contributions-api.jogruber.de/v4/' + GITHUB_USER + '?y=last')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) {
+      var days = d.contributions || [];
+      if (!days.length) return;
+      total = d.total && d.total.lastYear != null ? d.total.lastYear : days.reduce(function (s, x) { return s + x.count; }, 0);
+      var box = $('petals'), frag = document.createDocumentFragment();
+      var lead = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
+      for (var i = 0; i < lead; i++) frag.appendChild(el('i', 'pad'));
+      days.forEach(function (x) { var c = el('i'); c.dataset.l = x.level; c.title = x.count + ' commits · ' + x.date; frag.appendChild(c); });
+      box.appendChild(frag);
+      $('tot2').textContent = total.toLocaleString('en') + ' commits';
+      $('from').textContent = fmtMonth.format(new Date(days[0].date + 'T00:00:00Z'));
+      $('to').textContent = fmtMonth.format(new Date(days[days.length - 1].date + 'T00:00:00Z'));
+      $('log').hidden = false;
+      box.scrollLeft = box.scrollWidth; // show the most recent weeks first on narrow screens
+      $('tot').textContent = total.toLocaleString('en');
+      $('caption').hidden = false;
+      setup();
+    })
+    .catch(function () { /* the tree still draws, just without the commit count */ });
+
+  /* ---------- the tree ---------- */
+  function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var INK = '#1A1B20';
+  var cv = $('tree'), ctx = cv.getContext('2d'), fcv = $('fall'), fx = fcv.getContext('2d');
+  var W = 0, H = 0, petals = [];
+
+  function setup() {
+    var dpr = Math.min(2, devicePixelRatio || 1);
+    W = cv.clientWidth; H = cv.clientHeight;
+    if (!W || !H) return;
+    [cv, fcv].forEach(function (c) { c.width = W * dpr; c.height = H * dpr; });
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); fx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var r = rng(11), tips = [];
+    function branch(x, y, len, ang, depth, wid) {
+      var x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+      ctx.strokeStyle = INK; ctx.lineWidth = wid; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x, y);
+      ctx.quadraticCurveTo((x + x2) / 2 + (r() - .5) * len * .3, (y + y2) / 2 + (r() - .5) * len * .3, x2, y2);
+      ctx.stroke();
+      if (depth <= 3) tips.push([x2, y2]);
+      if (depth <= 0) return;
+      var n = depth > 6 ? 2 : (r() < .55 ? 2 : 3);
+      for (var i = 0; i < n; i++) branch(x2, y2, len * (.7 + r() * .1), ang + (r() - .5) * .9 + (i - (n - 1) / 2) * .55, depth - 1, wid * .66);
+    }
+    branch(W * .42, H * 1.02, H * .2, -Math.PI / 2 + .08, 8, Math.max(6, W * .02));
+
+    // one blossom per ~5 commits; without data the tree is about a third in bloom
+    var want = total ? Math.min(tips.length, Math.max(1, Math.round(total / 5))) : Math.round(tips.length * .35);
+    if (total) $('per').textContent = Math.max(1, Math.round(total / want));
+    tips.slice().sort(function () { return r() - .5; }).slice(0, want).forEach(function (p) {
+      for (var k = 0; k < 5; k++) {
+        var a = k / 5 * Math.PI * 2 + r(), px = p[0] + Math.cos(a) * 5, py = p[1] + Math.sin(a) * 5;
+        ctx.fillStyle = k % 2 ? '#EC9FB5' : '#F4C2D0'; ctx.globalAlpha = .9;
+        ctx.beginPath(); ctx.ellipse(px, py, 5.5, 3.4, a, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1; ctx.fillStyle = '#D9668A'; ctx.beginPath(); ctx.arc(p[0], p[1], 1.8, 0, 7); ctx.fill();
+    });
+    petals = Array.from({ length: Math.round(W / 14) }, function () { return newPetal(true); });
+    if (reduce) drawPetals();
+  }
+  function newPetal(init) { return { x: Math.random() * W, y: init ? Math.random() * H : -10, v: .35 + Math.random() * .6, s: 3 + Math.random() * 3, r: Math.random() * 6, w: Math.random() * 6, dr: (Math.random() - .5) * .03 }; }
+  function drawPetals() {
+    fx.clearRect(0, 0, W, H);
+    petals.forEach(function (p, i) {
+      if (!reduce) {
+        p.y += p.v; p.w += .015; p.x += Math.sin(p.w) * .6 + .15; p.r += p.dr;
+        if (p.y > H + 10 || p.x > W + 10) petals[i] = p = newPetal(false);
+      }
+      fx.save(); fx.translate(p.x, p.y); fx.rotate(p.r); fx.fillStyle = '#E88AA5'; fx.globalAlpha = .85;
+      fx.beginPath(); fx.ellipse(0, 0, p.s, p.s * .55, 0, 0, 7); fx.fill(); fx.restore();
     });
   }
-
-  /* ---- auto-hide header + progress + section label ---- */
-  var header = document.getElementById('site-header');
-  var bar = document.getElementById('progress');
-  var label = document.getElementById('section-label');
-  var marks = [['01 SESSION', 'about'], ['02 ELSEWHERE', 'links'], ['03 STACK', 'stack']];
-  var lastY = window.scrollY;
-  var queued = false;
-
-  function onScroll() {
-    var y = window.scrollY;
-    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    var delta = y - lastY;
-    if (delta > 2 && y > 80) header.classList.add('hidden');
-    else if (delta < -2 || y <= 80) header.classList.remove('hidden');
-    lastY = y;
-    bar.style.width = Math.round((y / max) * 100) + '%';
-    var sec = marks[0][0];
-    marks.forEach(function (m) {
-      var el = document.getElementById(m[1]);
-      if (el && el.getBoundingClientRect().top <= 140) sec = m[0];
-    });
-    if (label.textContent !== sec) label.textContent = sec;
+  function tick() {
+    if (!document.hidden) drawPetals();
+    requestAnimationFrame(tick);
   }
-
-  window.addEventListener('scroll', function () {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(function () { queued = false; onScroll(); });
-  }, { passive: true });
-  onScroll();
+  setup();
+  if (!reduce) tick();
+  var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(setup, 150); });
 })();
 </script>
 </body>
