@@ -109,7 +109,7 @@
   .stack-row span.main { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .stack-row span.main small { font-size: 11px; color: var(--petal); margin-left: 6px; text-transform: uppercase; letter-spacing: .08em; }
 
-  /* ---------- commit petals ---------- */
+  /* ---------- contribution petals ---------- */
   .log { margin-top: 56px; }
   .log h2 { margin-top: 0; }
   .petals { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 4px; overflow-x: auto; padding-bottom: 8px; }
@@ -139,11 +139,11 @@
 <body>
 <div class="wrap">
   <section class="hero">
-    <div class="treebox" role="img" aria-label="A cherry tree. Each blossom stands for a few of my GitHub commits from the last year.">
+    <div class="treebox" role="img" aria-label="A cherry tree. Each blossom stands for a few of my GitHub contributions from the last year.">
       <div class="moon"></div>
       <canvas id="tree"></canvas>
       <canvas id="fall"></canvas>
-      <div class="caption" id="caption" hidden><b id="tot">0</b> commits · last 365 days<br>1 blossom ≈ <span id="per">0</span> commits</div>
+      <div class="caption" id="caption" hidden><b id="tot">0</b> contributions · last 365 days<br>1 blossom ≈ <span id="per">0</span> contributions</div>
     </div>
 
     <div>
@@ -184,7 +184,7 @@
   </section>
 
   <section class="log" id="log" hidden>
-    <h2>Commit petals · <span id="tot2"></span></h2>
+    <h2>Contribution petals · <span id="tot2"></span></h2>
     <div class="petals" id="petals" role="img" aria-label="GitHub contribution calendar for the last year"></div>
     <div class="legend"><span id="from"></span><span>fewer <b style="color:#EC9FB5">●</b> <b style="color:#D9668A">●</b> <b style="color:#B73C66">●</b> more</span><span id="to"></span></div>
   </section>
@@ -298,9 +298,9 @@
     box.textContent = '';
     var lead = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
     for (var i = 0; i < lead; i++) frag.appendChild(el('i', 'pad'));
-    days.forEach(function (x) { var c = el('i'); c.dataset.l = x.level; c.title = x.count + ' commits · ' + x.date; frag.appendChild(c); });
+    days.forEach(function (x) { var c = el('i'); c.dataset.l = x.level; c.title = x.count + (x.count === 1 ? ' contribution · ' : ' contributions · ') + x.date; frag.appendChild(c); });
     box.appendChild(frag);
-    $('tot2').textContent = total.toLocaleString('en') + ' commits';
+    $('tot2').textContent = total.toLocaleString('en') + ' contributions';
     $('from').textContent = fmtMonth.format(new Date(days[0].date + 'T00:00:00Z'));
     $('to').textContent = fmtMonth.format(new Date(days[days.length - 1].date + 'T00:00:00Z'));
     $('log').hidden = false;
@@ -347,7 +347,7 @@
     }
     branch(W * .42, H * 1.02, H * .2, -Math.PI / 2 + .08, 8, Math.max(6, W * .02));
 
-    // one blossom per ~5 commits; without data the tree is about a third in bloom
+    // one blossom per ~5 contributions; without data the tree is about a third in bloom
     var want = total ? Math.min(tips.length, Math.max(1, Math.round(total / 5))) : Math.round(tips.length * .35);
     if (total) $('per').textContent = Math.max(1, Math.round(total / want));
     tips.slice().sort(function () { return r() - .5; }).slice(0, want).forEach(function (p) {
