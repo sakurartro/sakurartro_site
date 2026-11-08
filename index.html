@@ -198,10 +198,10 @@
   /* ================= edit your content here ================= */
   var GITHUB_USER = 'sakurartro';
 
-  // Best friends. The link does not depend on the @username, so a rename does not break it.
-  //   tgId   : numeric Telegram user id (never changes). Get it from @userinfobot, then paste it here.
-  //            With an id the link is tg://user?id=<id>. Without one it falls back to t.me/<tgUser>.
-  //   tgUser : current @username, used only until tgId is filled in. Not shown on the page.
+  // Best friends. Each row links to https://t.me/<tgUser>, which opens for everyone.
+  // If someone renames their Telegram account, update tgUser here (one line).
+  // tgId (numeric user id) is kept for reference and used only if tgUser is empty:
+  // tg://user?id=<id> opens a profile only when the viewer's Telegram already knows that person.
   var FRIENDS = [
     { name: 'm1pus',        tgUser: 'm1pus',        tgId: '6467883325' },
     { name: 'hemera_sss',   tgUser: 'hemera_sss',   tgId: '5131611473' },
@@ -233,7 +233,7 @@
   FRIENDS.forEach(function (f) {
     var li = el('li', 'friend');
     var a = el('a');
-    a.href = f.tgId ? 'tg://user?id=' + encodeURIComponent(f.tgId) : 'https://t.me/' + encodeURIComponent(f.tgUser);
+    a.href = f.tgUser ? 'https://t.me/' + encodeURIComponent(f.tgUser) : 'tg://user?id=' + encodeURIComponent(f.tgId);
     a.appendChild(el('span', 'ava', f.name.charAt(0).toUpperCase()));
     a.appendChild(el('b', null, f.name));
     a.appendChild(el('span', 'go', '↗'));
