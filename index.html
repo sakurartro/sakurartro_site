@@ -58,7 +58,6 @@
 
   h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 7vw, 92px); line-height: 1; letter-spacing: -.02em; margin: 0 0 16px; text-wrap: balance; }
   h1 span { color: var(--petal-deep); }
-  .bio { max-width: 44ch; color: var(--ink-soft); margin: 0 0 8px; }
 
   h2 {
     font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--ink-soft);
@@ -76,9 +75,14 @@
   /* ---------- trio ---------- */
   .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 64px; }
   .trio h2 { margin-top: 0; }
+  .note { margin: -4px 0 8px; font: 12px var(--mono); color: var(--ink-soft); }
   .list { list-style: none; margin: 0; padding: 0; }
   .list li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; align-items: center; padding: 9px 0; border-bottom: 1px solid #1A1B2018; }
-  .list li.friend { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .list li.friend { display: block; padding: 0; }
+  .list li.friend a { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 9px 0; text-decoration: none; transition: padding .2s; }
+  .list li.friend a:hover { padding-left: 10px; }
+  .list li.friend .go { font: 14px var(--mono); color: var(--ink-soft); transition: color .2s, transform .2s; }
+  .list li.friend a:hover .go { color: var(--petal-deep); transform: translate(2px, -2px); }
   .list b { display: block; font-family: var(--display); font-weight: 600; font-size: 19px; line-height: 1.2; }
   .list small { color: var(--ink-soft); font-size: 13px; }
   .list em { font: normal 12px var(--mono); color: var(--ink-soft); }
@@ -145,7 +149,6 @@
 
     <div>
       <h1>sakura<span>rtro</span></h1>
-      <p class="bio">Backend developer. Go &amp; Python. Bots, APIs and small tools. Below are the places I live online, the people I keep close, and what I listen to.</p>
 
       <h2>Find me</h2>
       <div class="socials">
@@ -161,6 +164,7 @@
   <section class="trio">
     <div>
       <h2>Best friends</h2>
+      <p class="note">Order doesn't matter.</p>
       <ul class="list" id="friends"></ul>
     </div>
     <div>
@@ -197,13 +201,15 @@
   /* ================= edit your content here ================= */
   var GITHUB_USER = 'sakurartro';
 
-  // TODO: placeholder friends. Replace the names, handles and notes with real ones.
+  // Best friends. The link does not depend on the @username, so a rename does not break it.
+  //   tgId   : numeric Telegram user id (never changes). Get it from @userinfobot, then paste it here.
+  //            With an id the link is tg://user?id=<id>. Without one it falls back to t.me/<tgUser>.
+  //   tgUser : current @username, used only until tgId is filled in. Not shown on the page.
   var FRIENDS = [
-    { name: 'Mika',  note: 'since 2016 · co-op partner', handle: '@mika.k' },
-    { name: 'Dani',  note: 'reviews my code at 3am',     handle: '@danidoes' },
-    { name: 'Yuki',  note: 'makes the beats I sample',   handle: '@yukibeats' },
-    { name: 'Tomás', note: 'draws all my covers',        handle: '@tomasdraws' },
-    { name: 'Aya',   note: 'my concert plus-one',        handle: '@aya.png' }
+    { name: 'm1pus',        tgUser: 'm1pus',        tgId: '' },
+    { name: 'hemera_sss',   tgUser: 'hemera_sss',   tgId: '' },
+    { name: 'Wannewin',     tgUser: 'Wannewin',     tgId: '' },
+    { name: 'creep28064212', tgUser: 'creep28064212', tgId: '' }
   ];
 
   // Photos live in assets/artists/. Replace a file to change a picture.
@@ -229,12 +235,12 @@
   /* ---------- friends ---------- */
   FRIENDS.forEach(function (f) {
     var li = el('li', 'friend');
-    li.appendChild(el('span', 'ava', f.name.charAt(0)));
-    var mid = el('span');
-    mid.appendChild(el('b', null, f.name));
-    mid.appendChild(el('small', null, f.note));
-    li.appendChild(mid);
-    li.appendChild(el('em', null, f.handle));
+    var a = el('a');
+    a.href = f.tgId ? 'tg://user?id=' + encodeURIComponent(f.tgId) : 'https://t.me/' + encodeURIComponent(f.tgUser);
+    a.appendChild(el('span', 'ava', f.name.charAt(0).toUpperCase()));
+    a.appendChild(el('b', null, f.name));
+    a.appendChild(el('span', 'go', '↗'));
+    li.appendChild(a);
     $('friends').appendChild(li);
   });
 
