@@ -45,7 +45,7 @@
   .wrap {
     max-width: 1200px; margin: 0 auto;
     padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 56px 40px;
+    padding-block: 56px 56px;
   }
 
   /* ---------- hero ---------- */
@@ -122,8 +122,6 @@
   .petals i.pad { visibility: hidden; }
   .legend { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--ink-soft); margin-top: 6px; gap: 12px; flex-wrap: wrap; }
 
-  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #1A1B2022; font: 12px var(--mono); color: var(--ink-soft); }
-
   @media (max-width: 900px) {
     .trio { grid-template-columns: 1fr; gap: 40px; }
   }
@@ -191,7 +189,6 @@
     <div class="legend"><span id="from"></span><span>fewer <b style="color:#EC9FB5">●</b> <b style="color:#D9668A">●</b> <b style="color:#B73C66">●</b> more</span><span id="to"></span></div>
   </section>
 
-  <footer>Commits and stars are read live from GitHub. Artist photos via Deezer.</footer>
 </div>
 
 <script>
