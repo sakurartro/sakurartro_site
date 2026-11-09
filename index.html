@@ -64,16 +64,12 @@
     margin: 32px 0 12px; display: flex; align-items: center; gap: 10px;
   }
   h2::after { content: ""; height: 1px; background: var(--ink); opacity: .2; flex: 1; }
-  .live { display: inline-flex; align-items: center; gap: 6px; color: var(--petal-deep); }
-  .live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 1.8s infinite; }
-  @keyframes pulse { 50% { opacity: .25; } }
-
   .socials { display: flex; flex-wrap: wrap; gap: 10px; }
   .socials a { font: 14px var(--mono); text-decoration: none; border: 1px solid var(--ink); padding: 8px 16px; border-radius: 99px; transition: background .2s, color .2s; }
   .socials a:hover { background: var(--ink); color: var(--paper); }
 
   /* ---------- trio ---------- */
-  .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; margin-top: 64px; }
+  .trio { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 64px; }
   .trio h2 { margin-top: 0; }
   .note { margin: -4px 0 8px; font: 12px var(--mono); color: var(--ink-soft); }
   .list { list-style: none; margin: 0; padding: 0; }
@@ -91,15 +87,6 @@
   img.ava { object-fit: cover; background: var(--paper-2); box-shadow: 0 0 0 2px var(--paper), 0 0 0 3px #1A1B2022; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .chips span { font: 12px var(--mono); border: 1px solid #1A1B2040; border-radius: 99px; padding: 2px 11px; color: var(--ink-soft); }
-
-  .repos { list-style: none; margin: 0; padding: 0; display: grid; }
-  .repos a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 10px 0; border-bottom: 1px solid #1A1B2018; text-decoration: none; transition: padding .2s; }
-  .repos a:hover { padding-left: 10px; }
-  .repos strong { font-family: var(--display); font-weight: 600; font-size: 20px; overflow-wrap: anywhere; }
-  .repos small { grid-column: 1; color: var(--ink-soft); font-size: 13px; }
-  .stars { grid-row: 1 / 3; grid-column: 2; align-self: center; font: 500 15px var(--mono); font-variant-numeric: tabular-nums; }
-  .stars em { font-style: normal; color: var(--petal-deep); }
-  .empty { color: var(--ink-soft); font-size: 14px; margin: 0; }
 
   /* ---------- stack ---------- */
   .stack { margin-top: 56px; }
@@ -122,7 +109,7 @@
   .petals i.pad { visibility: hidden; }
   .legend { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--ink-soft); margin-top: 6px; gap: 12px; flex-wrap: wrap; }
 
-  @media (max-width: 900px) {
+  @media (max-width: 720px) {
     .trio { grid-template-columns: 1fr; gap: 40px; }
   }
   @media (max-width: 820px) {
@@ -132,7 +119,6 @@
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .live i { animation: none; }
   }
 </style>
 </head>
@@ -155,6 +141,7 @@
         <a href="https://t.me/sakurartro">Telegram</a>
         <a href="mailto:imsusimgg@gmail.com">Email</a>
         <a href="https://open.spotify.com/user/31dboxh7dcf5qdkn4xk5uted7w4q">Spotify</a>
+        <a href="https://instagram.com/sakurartro">Instagram</a>
         <a href="https://discord.com/users/1018506284871471185">Discord</a>
       </div>
     </div>
@@ -169,10 +156,6 @@
     <div>
       <h2>Music taste</h2>
       <ul class="list" id="artists"></ul>
-    </div>
-    <div>
-      <h2>Projects <span class="live"><i></i>stars, live</span></h2>
-      <ul class="repos" id="repos"><li><p class="empty">Loading from GitHub…</p></li></ul>
     </div>
   </section>
 
@@ -253,38 +236,6 @@
   var chips = el('div', 'chips');
   GENRES.forEach(function (g) { chips.appendChild(el('span', null, g)); });
   $('artists').parentNode.appendChild(chips);
-
-  /* ---------- GitHub: repos with live stars ---------- */
-  function loadRepos() {
-    fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&type=owner')
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (list) {
-        var top = list.filter(function (r) { return !r.fork && !r.archived && r.name.toLowerCase() !== GITHUB_USER; })
-          .sort(function (a, b) { return b.stargazers_count - a.stargazers_count || new Date(b.pushed_at) - new Date(a.pushed_at); })
-          .slice(0, 3);
-        var ul = $('repos');
-        ul.textContent = '';
-        if (!top.length) { var li0 = el('li'); li0.appendChild(el('p', 'empty', 'Nothing public yet.')); ul.appendChild(li0); return; }
-        top.forEach(function (r) {
-          var li = el('li');
-          var a = el('a'); a.href = r.html_url;
-          a.appendChild(el('strong', null, r.name));
-          var st = el('span', 'stars'); st.appendChild(el('em', null, '★')); st.appendChild(document.createTextNode(' ' + r.stargazers_count.toLocaleString('en')));
-          a.appendChild(st);
-          a.appendChild(el('small', null, [r.description, r.language].filter(Boolean).join(' · ') || 'GitHub repository'));
-          li.appendChild(a); ul.appendChild(li);
-        });
-      })
-      .catch(function () {
-        if ($('repos').querySelector('a')) return; // keep the last good list
-        $('repos').textContent = '';
-        var li = el('li'); var p = el('p', 'empty'); p.appendChild(document.createTextNode('Could not reach GitHub. '));
-        var a = el('a', null, 'Open my profile'); a.href = 'https://github.com/' + GITHUB_USER; p.appendChild(a);
-        li.appendChild(p); $('repos').appendChild(li);
-      });
-  }
-  loadRepos();
-  setInterval(loadRepos, 120000);
 
   /* ---------- GitHub: contributions ---------- */
   var total = 0;
