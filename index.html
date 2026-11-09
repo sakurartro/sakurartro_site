@@ -53,8 +53,6 @@
   .treebox { position: relative; aspect-ratio: 4 / 5; max-height: 80vh; width: 100%; }
   .treebox canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .moon { position: absolute; top: 4%; right: 8%; width: 16%; aspect-ratio: 1; border-radius: 50%; background: #F7F8FA; box-shadow: 0 0 0 1px #00000010, 0 0 60px 10px #fff8; }
-  .caption { position: absolute; left: 0; bottom: 0; font: 12px/1.5 var(--mono); color: var(--ink-soft); }
-  .caption b { color: var(--ink); font-weight: 500; }
 
   h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 7vw, 92px); line-height: 1; letter-spacing: -.02em; margin: 0 0 16px; text-wrap: balance; }
   h1 span { color: var(--petal-deep); }
@@ -132,11 +130,10 @@
 <body>
 <div class="wrap">
   <section class="hero">
-    <div class="treebox" role="img" aria-label="A cherry tree. Each blossom stands for a few of my GitHub contributions from the last year.">
+    <div class="treebox" role="img" aria-label="A cherry tree in bloom.">
       <div class="moon"></div>
       <canvas id="tree"></canvas>
       <canvas id="fall"></canvas>
-      <div class="caption" id="caption" hidden><b id="tot">0</b> contributions · last 365 days<br>1 blossom ≈ <span id="per">0</span> contributions</div>
     </div>
 
     <div>
@@ -173,7 +170,7 @@
   </section>
 
   <section class="log" id="log" hidden>
-    <h2>Contribution petals · <span id="tot2"></span></h2>
+    <h2>GitHub Activity · <span id="tot2"></span></h2>
     <div class="petals" id="petals" role="img" aria-label="GitHub contribution calendar for the last year"></div>
     <div class="legend"><span id="from"></span><span>fewer <b style="color:#EC9FB5">●</b> <b style="color:#D9668A">●</b> <b style="color:#B73C66">●</b> more</span><span id="to"></span></div>
   </section>
@@ -273,42 +270,53 @@
     $('wallets').appendChild(li);
   });
 
-  /* ---------- GitHub: contributions ---------- */
-  var total = 0;
-  var fmtMonth = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' });
+  /* ---------- GitHub activity calendar ---------- */
+  var fmtDay = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
   var CACHE_KEY = 'contrib-v1:' + GITHUB_USER;
+  var firstRender = true;
   function render(d) {
     var days = d.contributions || [];
     if (!days.length) return;
-    total = d.total && d.total.lastYear != null ? d.total.lastYear : days.reduce(function (s, x) { return s + x.count; }, 0);
+    var total = d.total && d.total.lastYear != null ? d.total.lastYear : days.reduce(function (s, x) { return s + x.count; }, 0);
     var box = $('petals'), frag = document.createDocumentFragment();
+    var keep = box.scrollLeft;
     box.textContent = '';
     var lead = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
     for (var i = 0; i < lead; i++) frag.appendChild(el('i', 'pad'));
     days.forEach(function (x) { var c = el('i'); c.dataset.l = x.level; c.title = x.count + (x.count === 1 ? ' contribution · ' : ' contributions · ') + x.date; frag.appendChild(c); });
     box.appendChild(frag);
     $('tot2').textContent = total.toLocaleString('en') + ' contributions';
-    $('from').textContent = fmtMonth.format(new Date(days[0].date + 'T00:00:00Z'));
-    $('to').textContent = fmtMonth.format(new Date(days[days.length - 1].date + 'T00:00:00Z'));
+    $('from').textContent = fmtDay.format(new Date(days[0].date + 'T00:00:00Z'));
+    $('to').textContent = fmtDay.format(new Date(days[days.length - 1].date + 'T00:00:00Z'));
     $('log').hidden = false;
-    box.scrollLeft = box.scrollWidth; // show the most recent weeks first on narrow screens
-    $('tot').textContent = total.toLocaleString('en');
-    $('caption').hidden = false;
-    setup();
+    // first paint: show the most recent weeks on narrow screens; later refreshes keep the reader's position
+    box.scrollLeft = firstRender ? box.scrollWidth : keep;
+    firstRender = false;
   }
-  // Show the last good answer straight away, then refresh it. If the commit service is down, the cached copy stays on screen.
+  // The commit service sometimes drops a request, so retry a few times before falling back to the cached copy.
+  function loadActivity(attempt) {
+    attempt = attempt || 0;
+    fetch('https://github-contributions-api.jogruber.de/v4/' + GITHUB_USER + '?y=last')
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        if (!d.contributions || !d.contributions.length) throw new Error('empty');
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) {}
+        render(d);
+      })
+      .catch(function () {
+        if (attempt < 3) setTimeout(function () { loadActivity(attempt + 1); }, [1500, 4000, 10000][attempt]);
+      });
+  }
+  // Show the last good answer straight away, then refresh it. If the service is down, the cached copy stays on screen.
   try { var cached = JSON.parse(localStorage.getItem(CACHE_KEY)); if (cached && cached.contributions) render(cached); } catch (e) {}
-  fetch('https://github-contributions-api.jogruber.de/v4/' + GITHUB_USER + '?y=last')
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (d) {
-      if (!d.contributions || !d.contributions.length) return;
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch (e) {}
-      render(d);
-    })
-    .catch(function () { /* keep whatever is on screen; the tree still draws without a count */ });
+  loadActivity();
+  setInterval(function () { loadActivity(); }, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) loadActivity(); });
 
   /* ---------- the tree ---------- */
   function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  // The tree is frozen as it looked on 2026-11-09 (143 blossoms). It no longer follows GitHub activity.
+  var BLOSSOMS = 143;
   var INK = '#1A1B20';
   var cv = $('tree'), ctx = cv.getContext('2d'), fcv = $('fall'), fx = fcv.getContext('2d');
   var W = 0, H = 0, petals = [];
@@ -334,9 +342,7 @@
     }
     branch(W * .42, H * 1.02, H * .2, -Math.PI / 2 + .08, 8, Math.max(6, W * .02));
 
-    // one blossom per ~5 contributions; without data the tree is about a third in bloom
-    var want = total ? Math.min(tips.length, Math.max(1, Math.round(total / 5))) : Math.round(tips.length * .35);
-    if (total) $('per').textContent = Math.max(1, Math.round(total / want));
+    var want = Math.min(tips.length, BLOSSOMS);
     tips.slice().sort(function () { return r() - .5; }).slice(0, want).forEach(function (p) {
       for (var k = 0; k < 5; k++) {
         var a = k / 5 * Math.PI * 2 + r(), px = p[0] + Math.cos(a) * 5, py = p[1] + Math.sin(a) * 5;
