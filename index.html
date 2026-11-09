@@ -94,7 +94,6 @@
   .wallets { list-style: none; margin: 0; padding: 0; }
   .wallets li { display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; gap: 6px 20px; align-items: center; padding: 14px 0; border-bottom: 1px solid #1A1B2018; }
   .wallets b { display: block; font-family: var(--display); font-weight: 600; font-size: 19px; line-height: 1.2; }
-  .wallets small { color: var(--ink-soft); font-size: 13px; }
   .wallets code { font: 13px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere; user-select: all; }
   .copy { font: 13px var(--mono); color: var(--ink); background: none; border: 1px solid var(--ink); padding: 6px 16px; border-radius: 99px; cursor: pointer; min-width: 84px; transition: background .2s, color .2s; }
   .copy:hover { background: var(--ink); color: var(--paper); }
@@ -210,11 +209,11 @@
   var GENRES = ['hyperpop'];
   // Crypto wallets. Each address was checked against its network's checksum.
   var WALLETS = [
-    { net: 'Bitcoin',  note: 'native SegWit',                                  addr: 'bc1qxh5ezsp8r3s6y2a84w72xxvrq79076e2wypesk' },
-    { net: 'Ethereum', note: 'also BNB Chain, Polygon, Base and other EVM chains', addr: '0x57Ee2Df9e587D0b259B61224A7418065211d5F32' },
-    { net: 'Solana',   note: 'SOL and SPL tokens',                             addr: 'F57tFigKUMNqSPGvDp6MyqJ9eGkUBykUKRi1iywYHtXx' },
-    { net: 'TRON',     note: 'TRC-20, for example USDT',                       addr: 'TJaKX9rfuVSs5LPeQR2eNCsRnzpP9aDS8b' },
-    { net: 'TON',      note: 'The Open Network',                               addr: 'UQDaKwq6d0atM7efEfuTuvdAJdc-C6r5ZSn0N8MY6LPQ2dIY' }
+    { net: 'Bitcoin',  addr: 'bc1qxh5ezsp8r3s6y2a84w72xxvrq79076e2wypesk' },
+    { net: 'Ethereum', addr: '0x57Ee2Df9e587D0b259B61224A7418065211d5F32' },
+    { net: 'Solana',   addr: 'F57tFigKUMNqSPGvDp6MyqJ9eGkUBykUKRi1iywYHtXx' },
+    { net: 'TRON',     addr: 'TJaKX9rfuVSs5LPeQR2eNCsRnzpP9aDS8b' },
+    { net: 'TON',      addr: 'UQDaKwq6d0atM7efEfuTuvdAJdc-C6r5ZSn0N8MY6LPQ2dIY' }
   ];
   /* ========================================================== */
 
@@ -255,9 +254,7 @@
   /* ---------- donate ---------- */
   WALLETS.forEach(function (w) {
     var li = el('li');
-    var left = el('span');
-    left.appendChild(el('b', null, w.net));
-    left.appendChild(el('small', null, w.note));
+    var left = el('b', null, w.net);
     var code = el('code', null, w.addr);
     var btn = el('button', 'copy', 'Copy');
     btn.type = 'button';
