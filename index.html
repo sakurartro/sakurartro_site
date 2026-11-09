@@ -88,6 +88,22 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .chips span { font: 12px var(--mono); border: 1px solid #1A1B2040; border-radius: 99px; padding: 2px 11px; color: var(--ink-soft); }
 
+  /* ---------- donate ---------- */
+  .donate { margin-top: 56px; }
+  .donate h2 { margin-top: 0; }
+  .wallets { list-style: none; margin: 0; padding: 0; }
+  .wallets li { display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; gap: 6px 20px; align-items: center; padding: 14px 0; border-bottom: 1px solid #1A1B2018; }
+  .wallets b { display: block; font-family: var(--display); font-weight: 600; font-size: 19px; line-height: 1.2; }
+  .wallets small { color: var(--ink-soft); font-size: 13px; }
+  .wallets code { font: 13px/1.5 var(--mono); color: var(--ink); overflow-wrap: anywhere; user-select: all; }
+  .copy { font: 13px var(--mono); color: var(--ink); background: none; border: 1px solid var(--ink); padding: 6px 16px; border-radius: 99px; cursor: pointer; min-width: 84px; transition: background .2s, color .2s; }
+  .copy:hover { background: var(--ink); color: var(--paper); }
+  .copy.done { background: var(--petal-deep); border-color: var(--petal-deep); color: #fff; }
+  @media (max-width: 720px) {
+    .wallets li { grid-template-columns: minmax(0, 1fr) auto; }
+    .wallets li code { grid-column: 1 / -1; grid-row: 2; }
+  }
+
   /* ---------- contribution petals ---------- */
   .log { margin-top: 56px; }
   .log h2 { margin-top: 0; }
@@ -151,6 +167,12 @@
     </div>
   </section>
 
+  <section class="donate">
+    <h2>Donate</h2>
+    <p class="note">Copy an address and check the network before you send.</p>
+    <ul class="wallets" id="wallets"></ul>
+  </section>
+
   <section class="log" id="log" hidden>
     <h2>Contribution petals · <span id="tot2"></span></h2>
     <div class="petals" id="petals" role="img" aria-label="GitHub contribution calendar for the last year"></div>
@@ -186,6 +208,14 @@
     { name: 'Slayyyter',         img: 'assets/artists/slayyyter.jpg' }
   ];
   var GENRES = ['hyperpop'];
+  // Crypto wallets. Each address was checked against its network's checksum.
+  var WALLETS = [
+    { net: 'Bitcoin',  note: 'native SegWit',                                  addr: 'bc1qxh5ezsp8r3s6y2a84w72xxvrq79076e2wypesk' },
+    { net: 'Ethereum', note: 'also BNB Chain, Polygon, Base and other EVM chains', addr: '0x57Ee2Df9e587D0b259B61224A7418065211d5F32' },
+    { net: 'Solana',   note: 'SOL and SPL tokens',                             addr: 'F57tFigKUMNqSPGvDp6MyqJ9eGkUBykUKRi1iywYHtXx' },
+    { net: 'TRON',     note: 'TRC-20, for example USDT',                       addr: 'TJaKX9rfuVSs5LPeQR2eNCsRnzpP9aDS8b' },
+    { net: 'TON',      note: 'The Open Network',                               addr: 'UQDaKwq6d0atM7efEfuTuvdAJdc-C6r5ZSn0N8MY6LPQ2dIY' }
+  ];
   /* ========================================================== */
 
   var $ = function (id) { return document.getElementById(id); };
@@ -221,6 +251,30 @@
   var chips = el('div', 'chips');
   GENRES.forEach(function (g) { chips.appendChild(el('span', null, g)); });
   $('artists').parentNode.appendChild(chips);
+
+  /* ---------- donate ---------- */
+  WALLETS.forEach(function (w) {
+    var li = el('li');
+    var left = el('span');
+    left.appendChild(el('b', null, w.net));
+    left.appendChild(el('small', null, w.note));
+    var code = el('code', null, w.addr);
+    var btn = el('button', 'copy', 'Copy');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Copy ' + w.net + ' address');
+    btn.addEventListener('click', function () {
+      function done() { btn.textContent = 'Copied'; btn.classList.add('done'); setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(code);
+        var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        try { if (document.execCommand('copy')) done(); } catch (e) {}
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(w.addr).then(done, fallback);
+      else fallback();
+    });
+    li.appendChild(left); li.appendChild(code); li.appendChild(btn);
+    $('wallets').appendChild(li);
+  });
 
   /* ---------- GitHub: contributions ---------- */
   var total = 0;
